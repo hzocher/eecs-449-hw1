@@ -1,0 +1,53 @@
+[project]
+name = "courseflow"
+version = "0.1.0"
+default-app = "web"
+jac-version = "==0.37.23"
+
+[apps]
+[apps.web]
+kind = "web-app"
+entry-point = "web"
+
+[apps.mobile]
+kind = "mobile"
+entry-point = "mobile"
+
+[apps.mobile.client]
+[apps.mobile.client.react_native]
+release = true
+
+
+
+[apps.desktop]
+kind = "desktop"
+entry-point = "desktop"
+
+[apps.desktop.desktop]
+name = "CourseFlow"
+identifier = "edu.umich.courseflow"
+backend = "${COURSEFLOW_URL:-http://127.0.0.1:8000}"
+
+
+[apps.cli]
+kind = "cli"
+entry-point = "cli"
+
+[apps.planner]
+kind = "service"
+entry-point = "core.planner"
+
+
+[dependencies]
+[dependencies.npm]
+react-native-web = "^0.21.2"
+
+
+[test]
+directories = ["core"]
+
+[client]
+[client.app_meta_data]
+title = "CourseFlow"
+description = "A coursework planner across web, mobile, and terminal."
+icon = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='10' fill='%234f46e5'/%3E%3Ctext x='8' y='28' font-family='sans-serif' font-size='24' fill='white'%3ECF%3C/text%3E%3C/svg%3E"

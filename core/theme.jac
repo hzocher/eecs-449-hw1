@@ -1,0 +1,30 @@
+import from "@jac/mobui" { StyleSheet }
+obj Colors { has ink: str = "#172033", muted: str = "#687086", paper: str = "#f4f6fb",
+    card: str = "#ffffff", line: str = "#dfe4ef", accent: str = "#4f46e5"; }
+glob:pub C = Colors(), S = StyleSheet.create({
+    "screen": {"flex": 1, "backgroundColor": C.paper},
+    "page": {"width": "100%", "maxWidth": 1160, "alignSelf": "center", "padding": 24, "gap": 26},
+    "header": {"flexDirection": "row", "justifyContent": "space-between", "alignItems": "center", "paddingVertical": 8},
+    "brand": {"fontSize": 26, "fontWeight": "800", "color": C.ink, "letterSpacing": -1}, "accent": {"color": C.accent},
+    "eyebrow": {"fontSize": 11, "fontWeight": "800", "letterSpacing": 1.8, "color": C.accent},
+    "title": {"fontSize": 43, "fontWeight": "800", "letterSpacing": -2, "color": C.ink},
+    "subtitle": {"fontSize": 17, "lineHeight": 26, "color": C.muted}, "layout": {"gap": 24, "alignItems": "stretch"},
+    "stack": {"gap": 15}, "row": {"flexDirection": "row", "gap": 10, "alignItems": "center", "flexWrap": "wrap"},
+    "between": {"flexDirection": "row", "justifyContent": "space-between", "alignItems": "center", "gap": 12},
+    "card": {"backgroundColor": C.card, "borderWidth": 1, "borderColor": C.line, "borderRadius": 16, "padding": 20, "gap": 13},
+    "tip": {"backgroundColor": "#eef2ff", "borderRadius": 16, "padding": 20, "gap": 12},
+    "input": {"borderWidth": 1, "borderColor": C.line, "borderRadius": 9, "padding": 12, "fontSize": 15, "color": C.ink, "backgroundColor": "#fff"},
+    "flexInput": {"flex": 1, "minWidth": 150}, "notes": {"minHeight": 70, "textAlignVertical": "top"},
+    "button": {"backgroundColor": C.accent, "paddingHorizontal": 16, "paddingVertical": 10, "borderRadius": 9, "alignItems": "center"},
+    "buttonText": {"color": "#fff", "fontWeight": "700", "fontSize": 14}, "quiet": {"backgroundColor": "#e9ecf4"},
+    "quietText": {"color": "#394158"}, "body": {"fontSize": 15, "lineHeight": 23, "color": C.ink},
+    "small": {"fontSize": 12, "lineHeight": 18, "color": C.muted}, "name": {"fontSize": 14, "fontWeight": "700", "color": C.ink},
+    "taskTitle": {"fontSize": 19, "fontWeight": "750", "color": C.ink}, "course": {"fontSize": 13, "fontWeight": "700", "color": C.accent},
+    "badge": {"paddingHorizontal": 9, "paddingVertical": 5, "borderRadius": 99},
+    "badgeText": {"fontSize": 10, "fontWeight": "800", "color": C.ink},
+    "low": {"backgroundColor": "#dcfce7"}, "medium": {"backgroundColor": "#fef3c7"}, "high": {"backgroundColor": "#fee2e2"},
+    "metric": {"fontSize": 58, "fontWeight": "800", "letterSpacing": -3, "color": C.accent},
+    "metricSmall": {"fontSize": 30, "fontWeight": "800", "color": C.ink}, "rule": {"height": 1, "backgroundColor": C.line},
+    "error": {"padding": 14, "borderRadius": 9, "backgroundColor": "#fee2e2", "color": "#991b1b"},
+    "footer": {"paddingVertical": 18, "borderTopWidth": 1, "borderTopColor": C.line, "gap": 10}
+});
