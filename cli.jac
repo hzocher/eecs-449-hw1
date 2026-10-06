@@ -21,8 +21,8 @@ def auth_request(base: str, username: str, password: str) -> str {
 }
 
 async def main -> int {
-    parser = argparse.ArgumentParser(description="CourseFlow: coursework planning from your terminal.");
-    parser.add_argument("--url", `default=os.environ.get("COURSEFLOW_URL", "http://127.0.0.1:8000"));
+    parser = argparse.ArgumentParser(description="HenryPlans: coursework planning from your terminal.");
+    parser.add_argument("--url", `default=os.environ.get("HENRYPLANS_URL", "http://127.0.0.1:8000"));
     parser.add_argument("command", choices=["login", "logout", "list", "today", "add", "done", "reopen", "delete", "stats"]);
     parser.add_argument("value", nargs="?", `default="");
     parser.add_argument("--course", `default="Personal");
@@ -33,7 +33,7 @@ async def main -> int {
     parser.add_argument("--notes", `default="");
     args = parser.parse_args();
     base = str(args.url).rstrip("/");
-    credentials = Path(os.environ.get("COURSEFLOW_SESSION", str(Path.home() / ".courseflow.json")));
+    credentials = Path(os.environ.get("HENRYPLANS_SESSION", str(Path.home() / ".henryplans.json")));
     os.environ["JAC_APP_PLANNER_URL"] = base + "/api/planner";
     try {
         if args.command == "logout" {
@@ -41,7 +41,7 @@ async def main -> int {
         }
         if args.command == "login" {
             if not args.value { parser.error("login needs a username"); }
-            password = os.environ.get("COURSEFLOW_PASSWORD") or getpass.getpass("Password: ");
+            password = os.environ.get("HENRYPLANS_PASSWORD") or getpass.getpass("Password: ");
             token = auth_request(base, str(args.value), password); sv_client.set_bearer_token(token);
             name = await join(str(args.value));
             fd = os.open(str(credentials), os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600);
@@ -84,7 +84,7 @@ async def main -> int {
         }
         return 0;
     } except Exception as e {
-        print("CourseFlow: " + str(e), file=sys.stderr); return 1;
+        print("HenryPlans: " + str(e), file=sys.stderr); return 1;
     }
 }
 

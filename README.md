@@ -1,9 +1,9 @@
-# CourseFlow
+# HenryPlans
 
 > Student name: Henry Zocher  
 > UMID: 41910206
 
-CourseFlow is a personal coursework planner built entirely with Jac. It keeps assignments and study sessions in one private, persistent plan and makes that plan available from a responsive web app, a native mobile app, and a CLI.
+HenryPlans is a personal coursework planner built entirely with Jac. It keeps assignments and study sessions in one private, persistent plan and makes that plan available from a responsive web app, a native mobile app, and a CLI.
 
 ## Features
 
@@ -55,7 +55,7 @@ jac run cli -- delete TASK_ID
 jac run cli -- logout
 ```
 
-`list` prints task IDs needed by `done`, `reopen`, and `delete`. The CLI saves its authentication token with owner-only permissions in `~/.courseflow.json`. Override the backend with `COURSEFLOW_URL` or `--url`, and the session path with `COURSEFLOW_SESSION`.
+`list` prints task IDs needed by `done`, `reopen`, and `delete`. The CLI saves its authentication token with owner-only permissions in `~/.henryplans.json`. Override the backend with `HENRYPLANS_URL` or `--url`, and the session path with `HENRYPLANS_SESSION`.
 
 ## Mobile app
 

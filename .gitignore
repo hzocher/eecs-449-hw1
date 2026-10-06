@@ -4,4 +4,4 @@ dist/
 node_modules/
 *.pyc
 __pycache__/
-.courseflow.json
+.henryplans.json

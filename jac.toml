@@ -1,5 +1,5 @@
 [project]
-name = "courseflow"
+name = "henryplans"
 version = "0.1.0"
 default-app = "web"
 jac-version = "==0.37.23"
@@ -24,9 +24,9 @@ kind = "desktop"
 entry-point = "desktop"
 
 [apps.desktop.desktop]
-name = "CourseFlow"
-identifier = "edu.umich.courseflow"
-backend = "${COURSEFLOW_URL:-http://127.0.0.1:8000}"
+name = "HenryPlans"
+identifier = "edu.umich.henryplans"
+backend = "${HENRYPLANS_URL:-http://127.0.0.1:8000}"
 
 
 [apps.cli]
@@ -48,6 +48,6 @@ directories = ["core"]
 
 [client]
 [client.app_meta_data]
-title = "CourseFlow"
+title = "HenryPlans"
 description = "A coursework planner across web, mobile, and terminal."
 icon = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='10' fill='%234f46e5'/%3E%3Ctext x='8' y='28' font-family='sans-serif' font-size='24' fill='white'%3ECF%3C/text%3E%3C/svg%3E"
