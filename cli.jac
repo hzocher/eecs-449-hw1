@@ -13,7 +13,7 @@ import from core.planner { join, add_task, set_complete, remove_task, load_dashb
 def auth_request(base: str, username: str, password: str) -> str {
     payload = json.dumps({"identity": {"type": "username", "value": username},
         "credential": {"type": "password", "password": password}}).encode();
-    request = urllib.request.Request(base + "/api/planner/user/login", data=payload,
+    request = urllib.request.Request(base + "/user/login", data=payload,
         headers={"Content-Type": "application/json"});
     with urllib.request.urlopen(request, timeout=15) as response {
         return str(json.loads(response.read())["data"]["token"]);

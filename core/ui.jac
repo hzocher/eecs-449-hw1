@@ -61,13 +61,16 @@ def:pub PlannerApp(remote: bool = False) -> JsxElement {
             identity = {"type": "username", "value": username.strip()};
             payload: dict[str, any] = {"credential": {"type": "password", "password": password}};
             if signup { payload["identities"] = [identity]; } else { payload["identity"] = identity; }
-            response = await fetch(__getApiBaseUrl() + "/api/planner/user/" + ("register" if signup else "login"),
+            response = await fetch(__getApiBaseUrl() + "/user/" + ("register" if signup else "login"),
                 {"method": "POST", "headers": {"Content-Type": "application/json"}, "body": JSON.stringify(payload)});
             result: any = await response.json();
-            if not response.ok { error = result.error.message or "Could not sign in."; return; }
+            if not response.ok {
+                error = "The server rejected this sign-in request (HTTP " + str(response.status) + ").";
+                return;
+            }
             jacSetToken(result.data.token); username = await join(username.strip());
             __setLocalStorage("courseflow_username", username); logged = True; password = ""; await refresh();
-        } except Exception { error = "Could not sign in. Check your connection and retry."; }
+        } except Exception as e { error = "Could not sign in: " + str(e); }
         finally { busy = False; }
     }
 
