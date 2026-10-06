@@ -15,13 +15,55 @@ def Button(label: str, action: Callable, quiet: bool = False, disabled: bool = F
     </Pressable>;
 }
 
+def Dropdown(label: str, value: str, options: list[str], onSelect: Callable) -> JsxElement {
+    has open: bool = False;
+    return <View style={S.dropdown}>
+        <Pressable accessibilityRole="button" accessibilityLabel={label}
+            onPress={lambda { open = not open; }} style={S.dropdownButton}>
+            <Text style={S.dropdownText}>{value}</Text><Text style={S.dropdownArrow}>{"▲" if open else "▼"}</Text>
+        </Pressable>
+        {<View style={S.dropdownMenu}>{for option in options {
+            <Pressable key={option} accessibilityRole="button" accessibilityLabel={label + " " + option}
+                onPress={lambda { onSelect(option); open = False; }}
+                style={[S.dropdownOption, S.dropdownSelected if option == value else {}]}>
+                <Text style={S.dropdownText}>{option}</Text>
+            </Pressable>
+        }}</View> if open else None}
+    </View>;
+}
+
+def due_label(due: str) -> str {
+    if not due { return "No deadline"; }
+    if "T" not in due { return "Due " + due; }
+    months = ["January", "February", "March", "April", "May", "June",
+        "July", "August", "September", "October", "November", "December"];
+    month = months[int(due[5:7]) - 1];
+    hour = int(due[11:13]);
+    period = "PM" if hour >= 12 else "AM";
+    display_hour = hour - 12 if hour > 12 else 12 if hour == 0 else hour;
+    return f"Due {month} {int(due[8:10])}, {due[:4]} at {display_hour}:{due[14:16]} {period}";
+}
+
 def:pub PlannerApp(remote: bool = False) -> JsxElement {
     has dashboard: Dashboard = Dashboard(), username: str = "", password: str = "",
-        title: str = "", course: str = "", due: str = "", priority: str = "medium",
+        title: str = "", course: str = "", priority: str = "medium",
+        due_month: str = "Month", due_day: str = "Day", due_year: str = "Year",
+        due_hour: str = "11", due_minute: str = "59", due_period: str = "PM",
         notes: str = "", minutes: str = "30", signup: bool = False,
         logged: bool = False, busy: bool = False, loading: bool = True,
         error: str = "", server: str = "", connected: bool = not remote;
     wide = useWindowDimensions().width >= 860;
+
+    def reset_due_to_today {
+        today = new(Date);  # jac:ignore[W2001]
+        month_number = int(today.getMonth()) + 1;
+        day_number = int(today.getDate());
+        month_names = ["January", "February", "March", "April", "May", "June",
+            "July", "August", "September", "October", "November", "December"];
+        due_month = month_names[month_number - 1];
+        due_day = str(day_number);
+        due_year = str(today.getFullYear());
+    }
 
     async def refresh {
         loading = True; error = "";
@@ -42,6 +84,7 @@ def:pub PlannerApp(remote: bool = False) -> JsxElement {
     }
 
     can with entry {
+        reset_due_to_today();
         logged = jacIsLoggedIn();
         username = __getLocalStorage("courseflow_username") or "";
         saved_server = __getLocalStorage("courseflow_server") or "http://10.0.2.2:8000";
@@ -78,9 +121,27 @@ def:pub PlannerApp(remote: bool = False) -> JsxElement {
         if busy { return; }
         busy = True; error = "";
         try {
-            await add_task(title, course, due, priority, notes, int(minutes));
-            title = ""; notes = ""; due = ""; minutes = "30"; await refresh();
-        } except Exception { error = "Check the title, YYYY-MM-DD due date, and time estimate."; }
+            deadline = "";
+            if due_month != "Month" {
+                if due_day == "Day" or due_year == "Year" { raise ValueError("Choose a month, day, and year."); }
+                month_names = ["January", "February", "March", "April", "May", "June",
+                    "July", "August", "September", "October", "November", "December"];
+                month_number = month_names.index(due_month) + 1;
+                month_text = "0" + str(month_number) if month_number < 10 else str(month_number);
+                day_number = int(due_day);
+                day_text = "0" + str(day_number) if day_number < 10 else str(day_number);
+                hour = int(due_hour);
+                if due_period == "PM" and hour < 12 { hour += 12; }
+                elif due_period == "AM" and hour == 12 { hour = 0; }
+                hour_text = "0" + str(hour) if hour < 10 else str(hour);
+                deadline = due_year + "-" + month_text + "-" + day_text + "T" + hour_text + ":" + due_minute + ":00";
+            }
+            await add_task(title, course, deadline, priority, notes, int(minutes));
+            title = ""; notes = ""; minutes = "30";
+            reset_due_to_today();
+            due_hour = "11"; due_minute = "59"; due_period = "PM";
+            await refresh();
+        } except Exception as e { error = "Could not add coursework: " + str(e); }
         finally { busy = False; }
     }
 
@@ -111,10 +172,36 @@ def:pub PlannerApp(remote: bool = False) -> JsxElement {
                 {<View style={S.card}><Text style={S.eyebrow}>ADD COURSEWORK</Text>
                     <TextInput accessibilityLabel="Assignment title" style={S.input} placeholder="Assignment or study task"
                         value={title} onChangeText={lambda (t: str) { title = t; }}/>
-                    <View style={S.row}><TextInput accessibilityLabel="Course" style={[S.input, S.flexInput]}
+                    <TextInput accessibilityLabel="Course" style={S.input}
                         placeholder="Course (e.g. EECS 449)" value={course} onChangeText={lambda (t: str) { course = t; }}/>
-                        <TextInput accessibilityLabel="Due date" style={[S.input, S.flexInput]} placeholder="YYYY-MM-DD"
-                            value={due} autoCapitalize="none" onChangeText={lambda (t: str) { due = t; }}/></View>
+                    <Text style={S.fieldLabel}>DUE DATE · MONTH / DAY / YEAR</Text>
+                    <View style={S.dateRow}>
+                        <Dropdown label="Due month" value={due_month}
+                            options={["January", "February", "March", "April", "May", "June",
+                                "July", "August", "September", "October", "November", "December"]}
+                            onSelect={lambda (v: str) { due_month = v; }}/>
+                        <Dropdown label="Due day" value={due_day}
+                            options={["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13",
+                                "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27",
+                                "28", "29", "30", "31"]} onSelect={lambda (v: str) { due_day = v; }}/>
+                        <Dropdown label="Due year" value={due_year}
+                            options={["2025", "2026", "2027", "2028", "2029", "2030", "2031", "2032", "2033", "2034", "2035"]}
+                            onSelect={lambda (v: str) { due_year = v; }}/>
+                    </View>
+                    <Text style={S.fieldLabel}>DUE TIME</Text>
+                    <View style={S.dateRow}>
+                        <Dropdown label="Due hour" value={due_hour}
+                            options={["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"]}
+                            onSelect={lambda (v: str) { due_hour = v; }}/>
+                        <Dropdown label="Due minute" value={due_minute}
+                            options={["00", "05", "10", "15", "20", "25", "30", "35", "40", "45", "50", "55", "59"]}
+                            onSelect={lambda (v: str) { due_minute = v; }}/>
+                        <Dropdown label="Due period" value={due_period} options={["AM", "PM"]}
+                            onSelect={lambda (v: str) { due_period = v; }}/>
+                    </View>
+                    <Button label="Clear due date" quiet={True} action={lambda {
+                        due_month = "Month"; due_day = "Day"; due_year = "Year";
+                    }}/>
                     <View style={S.row}>{for level in ["low", "medium", "high"] {
                         <Button key={level} label={level.capitalize()} quiet={priority != level}
                             action={lambda { priority = level; }}/>
@@ -136,7 +223,7 @@ def:pub PlannerApp(remote: bool = False) -> JsxElement {
                         <Text style={S.badgeText}>{task.priority.upper()}</Text></View><Text style={S.small}>{task.minutes} min</Text></View>
                     <Text style={S.taskTitle}>{task.title}</Text><Text style={S.course}>{task.course}</Text>
                     {<Text style={S.body}>{task.notes}</Text> if task.notes else None}
-                    <Text style={S.small}>{"Due " + task.due if task.due else "No deadline"}</Text>
+                    <Text style={S.small}>{due_label(task.due)}</Text>
                     <View style={S.row}><Button label={"Mark open" if task.completed else "Complete"}
                         action={lambda { act("complete", task.id, task.completed); }} disabled={busy}/>
                         <Button label="Delete" quiet={True} action={lambda { act("delete", task.id); }} disabled={busy}/></View>

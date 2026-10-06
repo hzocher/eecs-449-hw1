@@ -81,9 +81,9 @@ def:pub add_task(
     }
     if due {
         try {
-            datetime.date.fromisoformat(due);
+            datetime.datetime.fromisoformat(due);
         } except ValueError {
-            raise ValueError("Due date must use YYYY-MM-DD.");
+            raise ValueError("Due date and time must use ISO format (YYYY-MM-DDTHH:MM:SS).");
         }
     }
     task = root ++> Task(
