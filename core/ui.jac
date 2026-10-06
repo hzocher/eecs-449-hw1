@@ -79,16 +79,16 @@ def:pub PlannerApp(remote: bool = False) -> JsxElement {
             error = "Enter a server address beginning with http:// or https://."; return;
         }
         server = server.rstrip("/"); globalThis.__JAC_API_BASE_URL__ = server;
-        __setLocalStorage("courseflow_server", server); jacLogout();
+        __setLocalStorage("henryplans_server", server); jacLogout();
         logged = False; connected = True; error = ""; await refresh();
     }
 
     can with entry {
         reset_due_to_today();
         logged = jacIsLoggedIn();
-        username = __getLocalStorage("courseflow_username") or "";
-        saved_server = __getLocalStorage("courseflow_server") or "http://10.0.2.2:8000";
-        should_connect = not remote or bool(__getLocalStorage("courseflow_server"));
+        username = __getLocalStorage("henryplans_username") or "";
+        saved_server = __getLocalStorage("henryplans_server") or "http://10.0.2.2:8000";
+        should_connect = not remote or bool(__getLocalStorage("henryplans_server"));
         server = saved_server;
         if remote and should_connect {
             globalThis.__JAC_API_BASE_URL__ = saved_server; connected = True;
@@ -112,7 +112,7 @@ def:pub PlannerApp(remote: bool = False) -> JsxElement {
                 return;
             }
             jacSetToken(result.data.token); username = await join(username.strip());
-            __setLocalStorage("courseflow_username", username); logged = True; password = ""; await refresh();
+            __setLocalStorage("henryplans_username", username); logged = True; password = ""; await refresh();
         } except Exception as e { error = "Could not sign in: " + str(e); }
         finally { busy = False; }
     }
@@ -159,17 +159,27 @@ def:pub PlannerApp(remote: bool = False) -> JsxElement {
     async def logout { jacLogout(); logged = False; password = ""; error = ""; await refresh(); }
 
     return <ScrollView style={S.screen} contentContainerStyle={S.page} keyboardShouldPersistTaps="handled">
-        <View style={S.header}><Text style={S.brand}>CourseFlow<Text style={S.accent}>.</Text></Text>
-            <Text style={S.eyebrow}>COURSEWORK, UNDER CONTROL</Text></View>
-        <View style={S.stack}><Text accessibilityRole="header" style={S.title}>Make the semester feel manageable.</Text>
+        <View style={S.header}><Text style={S.brand}>HenryPlans<Text style={S.accent}>.</Text></Text>
+            {<View style={S.row}><Text style={S.small}>Signed in as {dashboard.viewer or username}</Text>
+                <Button label="Sign out" quiet={True} action={logout} disabled={busy}/></View>
+                if logged else <Text style={S.eyebrow}>COURSEWORK, UNDER CONTROL</Text>}</View>
+        {<View style={S.stack}><Text accessibilityRole="header" style={S.title}>Make the semester feel manageable.</Text>
             <Text style={S.subtitle}>Capture assignments, plan study time, and see what deserves attention next.</Text></View>
+            if logged else None}
         {<Text accessibilityRole="alert" style={S.error}>{error}</Text> if error else None}
-        {<View style={S.card}><Text style={S.name}>Connect to your CourseFlow server</Text>
+        {<View style={S.card}><Text style={S.name}>Connect to your HenryPlans server</Text>
             <TextInput accessibilityLabel="Server address" style={S.input} value={server} autoCapitalize="none"
                 onChangeText={lambda (t: str) { server = t; }}/><Button label="Connect" action={connect}/></View>
-        if not connected else <View style={[S.layout, {"flexDirection": "row" if wide else "column"}]}>
-            <View style={[S.stack, {"flex": 1, "minWidth": 0}]}>
-                {<View style={S.card}><Text style={S.eyebrow}>ADD COURSEWORK</Text>
+        if not connected else <View style={[S.layout, {
+            "flexDirection": "row" if wide else "column",
+            "justifyContent": "flex-start" if logged else "center"
+        }]}>
+            {<View style={[S.layout, {
+                "flex": 1, "minWidth": 0,
+                "flexDirection": "row" if wide else "column"
+            }]}>
+                <View style={[S.stack, {"width": 440 if wide else "100%"}]}>
+                <View style={S.card}><Text style={S.eyebrow}>ADD COURSEWORK</Text>
                     <TextInput accessibilityLabel="Assignment title" style={S.input} placeholder="Assignment or study task"
                         value={title} onChangeText={lambda (t: str) { title = t; }}/>
                     <TextInput accessibilityLabel="Course" style={S.input}
@@ -211,8 +221,10 @@ def:pub PlannerApp(remote: bool = False) -> JsxElement {
                     <TextInput accessibilityLabel="Notes" style={[S.input, S.notes]} placeholder="Notes, links, or a first step"
                         multiline={True} value={notes} onChangeText={lambda (t: str) { notes = t; }}/>
                     <Button label={"Saving…" if busy else "Add to plan"} action={create_task}
-                        disabled={busy or not title.strip()}/></View> if logged else None}
-                <View style={S.between}><Text style={S.eyebrow}>YOUR ASSIGNMENTS</Text>
+                        disabled={busy or not title.strip()}/></View>
+                </View>
+                <View style={[S.stack, {"flex": 1, "minWidth": 0}]}>
+                <View style={S.between}><Text style={S.eyebrow}>YOUR SCHEDULE</Text>
                     <Button label="Refresh" quiet={True} action={refresh} disabled={loading}/></View>
                 {<Text style={S.small}>Loading your plan…</Text> if loading else None}
                 {<View style={S.card}><Text style={S.name}>Nothing due yet.</Text>
@@ -228,14 +240,13 @@ def:pub PlannerApp(remote: bool = False) -> JsxElement {
                         action={lambda { act("complete", task.id, task.completed); }} disabled={busy}/>
                         <Button label="Delete" quiet={True} action={lambda { act("delete", task.id); }} disabled={busy}/></View>
                 </View> }}
-            </View>
-            <View style={[S.stack, {"width": 300 if wide else "100%"}]}>
-                {<View style={S.card}><Text style={S.eyebrow}>SEMESTER SNAPSHOT</Text>
-                    <Text style={S.metric}>{dashboard.open_count}</Text><Text style={S.name}>open items</Text><View style={S.rule}/>
-                    <Text style={S.metricSmall}>{dashboard.focus_minutes}</Text><Text style={S.small}>minutes of planned focus</Text>
-                    <Text style={S.metricSmall}>{dashboard.done_count}</Text><Text style={S.small}>completed items</Text>
-                    <Text style={S.small}>Signed in as {dashboard.viewer}</Text>
-                    <Button label="Sign out" quiet={True} action={logout} disabled={busy}/></View> if logged else
+                </View>
+            </View> if logged else None}
+            {<View style={[S.stack, {
+                "width": "100%",
+                "maxWidth": 440,
+                "alignSelf": "center"
+            }]}>
                 <View style={S.card}><Text style={S.name}>{"Create your planner" if signup else "Welcome back"}</Text>
                     <TextInput accessibilityLabel="Username" style={S.input} placeholder="Username" value={username}
                         autoCapitalize="none" autoCorrect={False} onChangeText={lambda (t: str) { username = t; }}/>
@@ -243,14 +254,11 @@ def:pub PlannerApp(remote: bool = False) -> JsxElement {
                         secureTextEntry={True} onChangeText={lambda (t: str) { password = t; }} onSubmitEditing={authenticate}/>
                     <Button label={"Create account" if signup else "Sign in"} action={authenticate} disabled={busy}/>
                     <Button label={"I already have an account" if signup else "Create an account"} quiet={True}
-                        action={lambda { signup = not signup; error = ""; }}/></View>}
-                <View style={S.tip}><Text style={S.eyebrow}>FOCUS TIP</Text><Text style={S.body}>
-                    Start with the nearest high-priority deadline. A specific 30-minute block beats a vague plan.
-                </Text></View>
-            </View>
+                        action={lambda { signup = not signup; error = ""; }}/></View>
+            </View> if not logged else None}
         </View>}
         <View style={S.footer}>{<Button label="Change server" quiet={True} action={lambda {
             jacLogout(); logged = False; connected = False; error = ""; dashboard = Dashboard();
-        }}/> if remote and connected else None}<Text style={S.small}>CourseFlow · One plan across web, mobile, and terminal.</Text></View>
+        }}/> if remote and connected else None}<Text style={S.small}>HenryPlans · One plan across web, mobile, and terminal.</Text></View>
     </ScrollView>;
 }
