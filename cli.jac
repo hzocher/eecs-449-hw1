@@ -27,6 +27,7 @@ async def main -> int {
     parser.add_argument("value", nargs="?", `default="");
     parser.add_argument("--course", `default="Personal");
     parser.add_argument("--due", `default="");
+    parser.add_argument("--time", `default="23:59");
     parser.add_argument("--priority", choices=["low", "medium", "high"], `default="medium");
     parser.add_argument("--minutes", type=int, `default=30);
     parser.add_argument("--notes", `default="");
@@ -55,7 +56,8 @@ async def main -> int {
             parser.error(args.command + " needs a title or task ID");
         }
         if args.command == "add" {
-            task_id = await add_task(str(args.value), str(args.course), str(args.due),
+            deadline = str(args.due) + "T" + str(args.time) + ":00" if args.due else "";
+            task_id = await add_task(str(args.value), str(args.course), deadline,
                 str(args.priority), str(args.notes), int(args.minutes));
             print("Added " + task_id);
         } elif args.command in ["done", "reopen"] {
@@ -70,7 +72,7 @@ async def main -> int {
                 today = datetime.date.today().isoformat();
                 shown = 0;
                 for task in dashboard.tasks {
-                    if args.command != "today" or task.due == today {
+                    if args.command != "today" or task.due[:10] == today {
                         mark = "✓" if task.completed else "○";
                         deadline = "due " + task.due if task.due else "no deadline";
                         print(f"{mark} {task.id}  [{task.priority.upper()}] {task.course}\n  {task.title} · {deadline} · {task.minutes} min");

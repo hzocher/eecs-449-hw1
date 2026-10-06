@@ -8,7 +8,7 @@ CourseFlow is a personal coursework planner built entirely with Jac. It keeps as
 ## Features
 
 - Private accounts with persistent coursework data
-- Assignment title, course, due date, priority, notes, and study-time estimate
+- Assignment title, course, due date and time, priority, notes, and study-time estimate
 - Deadline-first task ordering with high-priority items surfaced first
 - Complete, reopen, and delete workflows
 - A semester snapshot with open/completed counts and remaining focus minutes
@@ -45,7 +45,7 @@ Keep the web/server process running, then use a second terminal:
 
 ```bash
 jac run cli -- login your_username
-jac run cli -- add "Finish project report" --course "EECS 449" --due 2026-10-12 --priority high --minutes 120 --notes "Draft evaluation section first"
+jac run cli -- add "Finish project report" --course "EECS 449" --due 2026-10-12 --time 17:30 --priority high --minutes 120 --notes "Draft evaluation section first"
 jac run cli -- list
 jac run cli -- today
 jac run cli -- stats
